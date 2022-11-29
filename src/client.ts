@@ -1,6 +1,8 @@
 import { feathers } from '@feathersjs/feathers'
 import type { TransportConnection, Params } from '@feathersjs/feathers'
 import authenticationClient from '@feathersjs/authentication-client'
+import type { Address, AddressData, AddressQuery, AddressService } from './services/address/address'
+export type { Address, AddressData, AddressQuery }
 
 import type { AuthenticationService } from '@feathersjs/authentication'
 
@@ -12,7 +14,11 @@ import type { AuthenticationClientOptions } from '@feathersjs/authentication-cli
 const userServiceMethods = ['find', 'get', 'create', 'update', 'patch', 'remove'] as const
 type UserClientService = Pick<UserService<Params<UserQuery>>, typeof userServiceMethods[number]>
 
+const addressServiceMethods = ['find', 'get', 'create', 'update', 'patch', 'remove'] as const
+type AddressClientService = Pick<AddressService<Params<AddressQuery>>, typeof addressServiceMethods[number]>
+
 export interface ServiceTypes {
+  address: AddressClientService
   authentication: Pick<AuthenticationService, 'create' | 'remove'>
   users: UserClientService
   //
@@ -37,6 +43,9 @@ export const createClient = <Configuration = any>(
 
   client.use('users', connection.service('users'), {
     methods: userServiceMethods
+  })
+  client.use('address', connection.service('address'), {
+    methods: addressServiceMethods
   })
   return client
 }
