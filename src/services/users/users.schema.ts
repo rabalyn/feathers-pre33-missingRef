@@ -1,3 +1,4 @@
+import { addressSchema } from './../address/address.schema'
 import { resolve } from '@feathersjs/schema'
 import { Type, getDataValidator, getValidator, querySyntax } from '@feathersjs/typebox'
 import type { Static } from '@feathersjs/typebox'
@@ -11,13 +12,19 @@ export const userSchema = Type.Object(
   {
     id: Type.Number(),
     email: Type.String(),
-    password: Type.Optional(Type.String())
+    password: Type.Optional(Type.String()),
+    addressId: Type.Number(),
+    address: Type.Ref(addressSchema)
   },
   { $id: 'User', additionalProperties: false }
 )
 export type User = Static<typeof userSchema>
 export const userResolver = resolve<User, HookContext>({
-  properties: {}
+  properties: {
+    address: async (value, user, context) => {
+      return await context.app.service('address').get(user.addressId)
+    }
+  }
 })
 
 export const userExternalResolver = resolve<User, HookContext>({
@@ -41,7 +48,7 @@ export const userDataResolver = resolve<User, HookContext>({
 })
 
 // Schema for allowed query properties
-export const userQueryProperties = Type.Pick(userSchema, ['id', 'email'])
+export const userQueryProperties = Type.Pick(userSchema, ['id', 'email', 'address'])
 export const userQuerySchema = querySyntax(userQueryProperties)
 export type UserQuery = Static<typeof userQuerySchema>
 export const userQueryValidator = getValidator(userQuerySchema, queryValidator)
